@@ -1,0 +1,21 @@
+
+OBJ_DIR := .obj
+OBJ = $(OBJ_DIR)/d.o 
+
+TARGET := $(OBJ_DIR)/libd.a
+
+$(OBJ_DIR)/%.o:%.cpp
+	@@[ -e $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
+	g++ -c $< -o $@
+
+$(OBJ_DIR)/%.o:%.c
+	@@[ -e $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
+	gcc -c $< -o $@
+
+all:$(OBJ)
+	@[ -e $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
+	ar -rcs $(TARGET) $(OBJ)	
+		
+clean:
+	-rm $(OBJ)
+	-rm $(TARGET)
