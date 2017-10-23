@@ -44,3 +44,7 @@ $(OBJ_DIR)/%.o:%.cpp
 $(OBJ_DIR)/%.o : %.c
 	@[ -e $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
 	gcc -c -o $@ $<	
+
+.PHONY: preconfig
+preconfig:
+	@echo "app = $(APPDIR)"

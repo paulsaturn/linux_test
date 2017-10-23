@@ -14,7 +14,7 @@
 #		(<命令行>)或+(<命令行>), make会做两次解析, 所以有些变量需要$$才行。
 #	6). 在include <file>时, 如果makefile中有目标<file>， 就会执行目标<file>		
 #	7). shexport命令输出全局变量		
-#	8). 导入shell命令
+#	8). 导入shell命令 (在ubuntu16.04下不行)
 #   9). $(call Package/test/description), 会在当前展开Package/test/description, 所以要注意多行语句(echo).
 #		通过 call 函数可以将一个变量定义为一个复杂的表达式, 格式如下：
 #		$(call VAR, 参数1, 参数2,...)
@@ -28,7 +28,7 @@ $(info o:$(o))
 pathsearch = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH)))))     
 LS := $(call pathsearch,ls)
 
-export SHELL=/usr/bin/env bash -c '. shell.sh; eval "$$2"' --
+#export SHELL=/usr/bin/env bash -c '. shell.sh; eval "$$2"' --
 
 NO_TRACE_MAKE := make
 
@@ -119,9 +119,9 @@ stamp::
 	@$(eval $(call BuildPackage,test))
 	@echo $(call Package/test/description)
 	@echo "Description:"; \
-	getvar $(call shvar,Package/test/description);
+#	getvar $(call shvar,Package/test/description);
 	@echo "Config :"; \
-	getvar $(call shvar,Package/test/config);
+#	getvar $(call shvar,Package/test/config);
 	@echo "stamp 2"	
 
 .obj/file.mk:
@@ -156,6 +156,17 @@ clean :
 	@ls -l $@
 	@echo -e "\033[0m"
 
+BUILDIRS := $(foreach SDIR, $(wildcard */Makefile), $(patsubst %/Makefile,%,$(SDIR)))
+
+.PHONY: preconfig
+#总产生一条命令行(然后才执行)，每段(每个循环)产生的命令行用;结束,防止下一个循环的第一个命令出错
+preconfig:
+	@$(foreach SDIR, $(BUILDIRS), $(call MAKE_template,$(SDIR)))
+#	@echo $(BUILDIRS)
+
+define MAKE_template
+	echo "\n" && make -C $(1) preconfig APPDIR="$(1)";
+endef
 # A target that is always out of date.
 FORCE:
 .PHONY: FORCE

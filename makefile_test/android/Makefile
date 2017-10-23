@@ -20,3 +20,7 @@ $(foreach __pass2_module,$(__ndk_modules),\
     $(eval LOCAL_MODULE := $(__pass2_module))\
     $(eval include build-binary.mk)\
 )
+
+.PHONY: preconfig
+preconfig:
+	@echo "app = $(APPDIR)"
