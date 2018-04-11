@@ -21,7 +21,11 @@
 
 #include <asm/io.h>
 //#include <asm/system.h>
+#if 0
 #include <asm/uaccess.h>
+#else
+#include <linux/uaccess.h>
+#endif
 
 //使用中断机制添加头文件   
 #include <linux/sched.h>   

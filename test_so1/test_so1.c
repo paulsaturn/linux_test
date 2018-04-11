@@ -47,24 +47,34 @@
  *      4).如果调用了execl，那么子进程退出时，就不会调用test_uninit(内存空间没有共享); 如果子进程加载了libtest_so1.so, 那么
  * 			libtest_so1.so中的析构函数也会被调用.
  **/
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 
 #include "lib_so.h"
 
-static __attribute__((constructor)) void test_init(void);
-static __attribute__((destructor)) void test_uninit(void);
+/*static*/ __attribute__((constructor)) void test_init(void);
+/*static*/ __attribute__((destructor)) void test_uninit(void);
+/*static*/ __attribute__((constructor(101))) void test_init_1(void);
+/*static*/ __attribute__((destructor(101))) void test_uninit_1(void);
 
-static void test_init(void) {
+/*static*/ void test_init(void) {
 	printf("%d : %s\n", getpid(), __FUNCTION__);
 }
 
-static void test_uninit(void) {
+/*static*/ void test_uninit(void) {
+	printf("%d : %s\n", getpid(), __FUNCTION__);
+}
+
+/*static*/ void test_init_1(void) {
+	printf("%d : %s\n", getpid(), __FUNCTION__);
+}
+
+/*static*/ void test_uninit_1(void) {
 	printf("%d : %s\n", getpid(), __FUNCTION__);
 }
 

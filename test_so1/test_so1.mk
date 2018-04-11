@@ -28,7 +28,8 @@ LOCAL_LIB_LDLIBS :=
 #=========================================================================	
 $(TARGETS): $(TARGETS_LIB) $(TARGETS_1) $(OBJS) 
 	@echo "[LD] $@"
-	$(_Q)$(CC) $(LDFLAGS) -o $@ $(OBJS) $(TARGETS_LIB) $(LOCAL_LDLIBS)	
+	$(_Q)$(CC) $(LDFLAGS) -o $@ $(OBJS) $(TARGETS_LIB) $(LOCAL_LDLIBS)
+#	$(_Q)$(CC) $(LDFLAGS) -o $@ $(OBJS) $(TARGETS_LIB) $(LOCAL_LDLIBS) -Wl,-Map=test.map	
 
 $(TARGETS_1): $(OBJS1)
 	@echo "[LD] $@"

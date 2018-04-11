@@ -1,0 +1,43 @@
+__attribute__((constructor)) 在main() 之前执行,
+__attribute__((destructor)) 在main()执行结束之后执行.
+
+如果要在main()之前或者是执行完成之后，需要执行很多的前处理动作或者是后处理动作，我们应该怎么处理?
+
+__attribute__((constructor(PRIORITY)))
+__attribute__((destructor(PRIORITY)))
+PRIORITY: 优先级.
+0-100(包括100),是内部保留的，所以在编码的时候需要注意.
+
+map文件中:
+.init_array     0x0000000000600de0       0x18
+                0x0000000000600de0                PROVIDE (__init_array_start, .)
+ *(SORT(.init_array.*) SORT(.ctors.*))
+ .init_array.00101
+                0x0000000000600de0        0x8 .obj/test_so1.o
+ *(.init_array EXCLUDE_FILE(*crtend?.o *crtend.o *crtbegin?.o *crtbegin.o) .ctors)
+ .init_array    0x0000000000600de8        0x8 /usr/lib/gcc/x86_64-linux-gnu/5/crtbegin.o
+ .init_array    0x0000000000600df0        0x8 .obj/test_so1.o
+                0x0000000000600df8                PROVIDE (__init_array_end, .)
+
+.fini_array     0x0000000000600df8       0x18
+                [!provide]                        PROVIDE (__fini_array_start, .)
+ *(SORT(.fini_array.*) SORT(.dtors.*))
+ .fini_array.00101
+                0x0000000000600df8        0x8 .obj/test_so1.o
+ *(.fini_array EXCLUDE_FILE(*crtend?.o *crtend.o *crtbegin?.o *crtbegin.o) .dtors)
+ .fini_array    0x0000000000600e00        0x8 /usr/lib/gcc/x86_64-linux-gnu/5/crtbegin.o
+ .fini_array    0x0000000000600e08        0x8 .obj/test_so1.o
+ 
+其中
+ __attribute__((constructor(101)))
+__attribute__((destructor(101)))
+对应
+.init_array.00101
+                0x0000000000600de0        0x8 .obj/test_so1.o
+其中
+ __attribute__((constructor(101)))
+__attribute__((destructor(101)))
+.fini_array    0x0000000000600e08        0x8 .obj/test_so1.o
+
+如果没有指定优先级, 那么按属性定义的先后来决定执行的先后顺序, init_array按从上到下的顺序执行, fini_array按从下到上的顺序(相反)执行
+指定优先级之后, init函数总是执行在crtbegin.o中的函数之前, finit函数总是执行在crtbegin.o中的函数之后

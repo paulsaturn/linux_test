@@ -5,8 +5,12 @@
  * 	@note :
  * 
  **/
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <stdio.h>
-
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include "lib_so.h"
 
 static int g_test_cnt = 0;
