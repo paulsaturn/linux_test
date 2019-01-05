@@ -20,6 +20,8 @@
 #		$(call VAR, 参数1, 参数2,...)
 #		call 函数可以将 "参数1“ ，”参数2“ 传递到VAR中, VAR根据传递进来的参数进行展开成一个完整的表达式.
 #	10). 命令行中调用makefile的函数dirname basename, 需要$$, 如果是函数内部，需要$$$$
+#   11). $(value VARIABLE) : 不对变量VARIBLE进行任何展开操作,直接返回变量VARIBALE的值
+#        var1 = $var2 在var1展开时才会展开var2；而var1 := $var2, 先展开var2后对var1赋值
 ##
 k = $(2)$(1) 
 map = $(foreach a,$(2),$(call $(1),$(a),good-)) 
@@ -31,6 +33,20 @@ LS := $(call pathsearch,ls)
 #export SHELL=/usr/bin/env bash -c '. shell.sh; eval "$$2"' --
 
 NO_TRACE_MAKE := make
+# 认为$P是一个变量
+FOO1 = 
+FOO = $(PATH) $(FOO1)
+$(warning "FOO = $(FOO)")
+$(warning "VFOO = $(value FOO)")
+
+FOO2 := $(PATH) $(FOO1)
+$(warning "FOO2 = $(FOO2)")
+$(warning "VFOO2 = $(value FOO2)")
+
+FOO1 += hello world
+#影响到FOO的输出，而没有影响到FOO2
+$(warning "FOO = $(FOO)")
+$(warning "FOO2 = $(FOO2)")
 
 .PHONY: all test stamp clean
 all: test foo stamp .obj/1.txt
