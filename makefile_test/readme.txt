@@ -14,7 +14,7 @@ $(lastword $(MAKEFILE_LIST))为mk1/Android.mk
 	函数“eval”对它的参数进行展开，展开的结果作为Makefile的一部分，make可以对展开内容进行语法解析。展开的结果可以包含一个新变量、目标、隐含规则或者是明确规则等。
 	也就是说此函数的功能主要是：根据其参数的关系、结构，对它们进行替换展开.
 	
-	做两次变量展开；以$(eval var),首先会对var做一次变量展开，然后对展开后的结果，再执行一次变量展开
+	实际使用时,如果在函数的展开结果中存在引用(格式为: $(x)),那么在函数的参数中应该使用“$$”来代替“$”
 	
 	1). 
 	$(eval xd:xd.c a.c)
@@ -111,7 +111,60 @@ $(lastword $(MAKEFILE_LIST))为mk1/Android.mk
 	
 	解析时，makefile先对$(1)做展开，假设结果为xxx，这是第一次；然后执行include xxx，这是第二次展开。
 	执行完后，整个$(eval include $(1))表达式返回值为空。这样解析错误解决了，
-	而且import_target的返回结果又正好是_PREFIXID的值。	
+	而且import_target的返回结果又正好是_PREFIXID的值。
+	
+  5).
+  Makefile:
+	 1 ###############################################
+	 2 pointer := pointed_value
+	 3 
+	 4 define foo 
+	 5 var := 123
+	 6 arg := $1
+	 7 $$($1) := ooooo
+	 8 endef 
+	 9 
+	10 $(info $(call foo,pointer))
+	11 #$(eval $(call foo,pointer))
+	12 
+	13 target:
+	14         @echo -----------------------------
+	15         @echo var: $(var), arg: $(arg)
+	16         @echo pointer: $(pointer), pointed_value: $(pointed_value)
+	17         @echo done.
+	18         @echo -----------------------------
+	19 
+	20 ###############################################	
+	注意上面的例子，$(eval $(call foo, pointer)) 那行被注释了。先执行这个注释了那行的 Makefile，结果如下：
+    var := 123
+    arg := pointer
+    $(pointer) := ooooo
+    -----------------------------
+    var: , arg:
+    pointer: pointed_value, pointed_value:
+    done.
+    -----------------------------
+	注意，
+	var := 123
+	arg := pointer
+	$(pointer) := ooooo
+	这几行就是 $(call foo,pointer) 的结果(或者说，调用 foo 这个 "函数"(因为 Makefile 中正式的名字叫做宏包) 的返回值)。同时注意到， var, arg, pointed_value 都是空值，因为我实际上只是通过 $(info ) 函数将替换了参数后的 foo 函数体，或者说 $(call foo, pointer) 的返回值打印到标准输出而已($1 就是 pointer, 调用函数，就直接替换下参数而已)，所以，这几行代码并没有真正执行。
+	
+	注意了，这个 $(call foo,pointer) 就是 Makefile 对 foo 函数的第一次求值。上面看到了，实际上求值出来的结果还是 Makefile 代码。
+	那么问题就来了。既然求值出来的结果还是 Makefile 代码，那这段代码又要怎么运行呢？答案就是再包一个eval, 所以eval就是第二次求值了。
+	因此，如果将 $(eval $(all foo,pointer)) 那行注释取消掉的话，运行结果如下：
+		var := 123
+		arg := pointer
+		$(pointer) := ooooo
+		-----------------------------
+		var: 123, arg: pointer
+		pointer: pointed_value, pointed_value: ooooo
+		done.
+		-----------------------------
+	OK. 注意，var, arg, pointed_value 都被赋值了，这个赋值操作就是第一次求值出来的代码运行的结果。
+
+	那么，为什么在写 foo 这个宏包的时候，要写成$$($1) := ooooo呢？
+	因为 Makefile 里面 $ 是元字符(meta-chara...)，也就是它是有特殊意义的。那在 Makefile 里面表示"字符" $ 就得用 $$
 			
 3. make -d或make --debug=<opt> 来查看makefile的处理过程
 	opt : 
