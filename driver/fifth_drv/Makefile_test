@@ -1,0 +1,8 @@
+TARGET := test_fasync
+
+all:
+	gcc -o $(TARGET) $(TARGET).c
+
+clean:
+	-rm -f $(TARGET) $(TARGET).o
+

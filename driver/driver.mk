@@ -4,6 +4,7 @@ MK_DIRS += globalmem myfifo
 MK_DIRS += lddbus
 MK_DIRS += mymap
 MK_DIRS += myv4l
+MK_DIRS += fifth_drv
 
 #===============================================================================
 all_tests:
